@@ -27,25 +27,33 @@ namespace Katana
     {
         public void Configuration(IAppBuilder app)
         {
+            app.UseHelloWorld();
+        }
+    }
+
+    public static class AppBuilderExtensions
+    {
+        public static void UseHelloWorld(this IAppBuilder app)
+        {
             app.Use<HelloWorldComponent>();
         }
+    } 
 
-        public class HelloWorldComponent
+    public class HelloWorldComponent
+    {
+        AppFunc _next;
+
+        public HelloWorldComponent(AppFunc next)
         {
-            AppFunc _next;
+            _next = next;
+        }
 
-            public HelloWorldComponent(AppFunc next)
+        public Task Invoke(IDictionary<string, object> enviroment)
+        {
+            var response = enviroment["owin.ResponseBody"] as Stream;
+            using (var writer = new StreamWriter(response))
             {
-                _next = next;
-            }
-
-            public Task Invoke(IDictionary<string, object> enviroment)
-            {
-                var response = enviroment["owin.ResponseBody"] as Stream;
-                using (var writer = new StreamWriter(response))
-                {
-                    return writer.WriteAsync("Hello!");
-                }
+                return writer.WriteAsync("Hello!");
             }
         }
     }

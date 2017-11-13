@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 namespace Katana
 {
     using System.IO;
+    using System.Web.Http;
     using AppFunc = Func<IDictionary<string, object>, Task>;
 
     class Program
@@ -27,15 +28,6 @@ namespace Katana
     {
         public void Configuration(IAppBuilder app)
         {
-            //app.Use(async (enviroment, next) =>
-            //{
-            //    foreach (var pair in enviroment.Environment)
-            //    {
-            //        Console.WriteLine("{0}:{1}", pair.Key, pair.Value);
-            //    }
-            //    await next();
-            //});
-
             app.Use(async (enviroment, next) =>
             {
                 Console.WriteLine("Requesting: " + enviroment.Request.Path);
@@ -43,7 +35,20 @@ namespace Katana
                 Console.WriteLine("Response: " + enviroment.Response.StatusCode);
             });
 
+            ConfigureWebApi(app);
+
             app.UseHelloWorld();
+        }
+
+        private void ConfigureWebApi(IAppBuilder app)
+        {
+            var config = new HttpConfiguration();
+            config.Routes.MapHttpRoute(
+                "Default", 
+                "api/{controller}/{id}", 
+                new { id = RouteParameter.Optional });
+
+            app.UseWebApi(config);
         }
     }
 
